@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Users, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
   
-  const { data: session } = useQuery({
+  const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
       const { data } = await supabase.auth.getSession();
@@ -63,8 +64,29 @@ export const Dashboard = () => {
     enabled: !!session?.user?.id && profile?.role === 'provider',
   });
 
+  // Use useEffect for navigation to prevent render-time navigation
+  useEffect(() => {
+    if (!sessionLoading && !session) {
+      navigate('/login');
+    }
+  }, [session, sessionLoading, navigate]);
+
+  // Show loading while checking session
+  if (sessionLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (navigation will happen via useEffect)
   if (!session) {
-    navigate('/login');
     return null;
   }
 
