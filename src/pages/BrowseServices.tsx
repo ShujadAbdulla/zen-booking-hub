@@ -49,7 +49,7 @@ const BrowseServices = () => {
         .eq('is_active', true);
 
       if (selectedCategory !== 'all') {
-        query = query.eq('service_providers.category', selectedCategory);
+        query = query.eq('service_providers.category', selectedCategory as any);
       }
 
       if (searchTerm) {
