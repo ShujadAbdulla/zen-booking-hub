@@ -38,7 +38,7 @@ const BrowseServices = () => {
         .from('services')
         .select(`
           *,
-          service_providers(
+          service_providers!inner(
             id,
             business_name,
             address,
