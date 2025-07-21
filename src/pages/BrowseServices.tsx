@@ -23,7 +23,7 @@ type Service = {
     address: string;
     category: string;
     is_verified: boolean;
-  };
+  } | null;
 };
 
 const BrowseServices = () => {
@@ -139,8 +139,8 @@ const BrowseServices = () => {
                       <div>
                         <CardTitle className="text-lg">{service.name}</CardTitle>
                         <CardDescription className="flex items-center gap-1">
-                          {service.service_providers.business_name}
-                          {service.service_providers.is_verified && (
+                          {service.service_providers?.business_name || 'Unknown Provider'}
+                          {service.service_providers?.is_verified && (
                             <Badge variant="secondary" className="ml-2">
                               <Star className="w-3 h-3 mr-1" />
                               Verified
@@ -148,9 +148,11 @@ const BrowseServices = () => {
                           )}
                         </CardDescription>
                       </div>
-                      <Badge variant="outline" className="capitalize">
-                        {service.service_providers.category}
-                      </Badge>
+                      {service.service_providers && (
+                        <Badge variant="outline" className="capitalize">
+                          {service.service_providers.category}
+                        </Badge>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -166,7 +168,7 @@ const BrowseServices = () => {
                           <Clock className="w-4 h-4" />
                           {service.duration_minutes} min
                         </div>
-                        {service.service_providers.address && (
+                        {service.service_providers?.address && (
                           <div className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
                             {service.service_providers.address.split(',')[0]}
