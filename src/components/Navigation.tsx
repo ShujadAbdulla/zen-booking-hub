@@ -1,6 +1,7 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Settings, LogOut, User } from "lucide-react";
+import { Calendar, Users, Settings, LogOut, User, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
@@ -10,9 +11,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Navigation = () => {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -39,12 +43,24 @@ export const Navigation = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/');
+    setMobileMenuOpen(false);
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <Calendar className="h-8 w-8 text-primary" />
@@ -52,7 +68,8 @@ export const Navigation = () => {
             </Link>
           </div>
           
-          <div className="flex items-center space-x-4">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
             {session ? (
               <>
                 <Link to="/dashboard">
@@ -69,11 +86,16 @@ export const Navigation = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>{profile?.full_name || 'User'}</span>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile?.avatar_url} />
+                        <AvatarFallback className="text-xs">
+                          {getInitials(profile?.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden lg:inline">{profile?.full_name || 'User'}</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem onClick={() => navigate('/profile')}>
                       <Settings className="mr-2 h-4 w-4" />
                       Profile
@@ -105,6 +127,116 @@ export const Navigation = () => {
                 </Link>
               </>
             )}
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center space-x-2">
+            {session && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarFallback className="text-xs">
+                        {getInitials(profile?.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                  {profile?.role === 'provider' && (
+                    <DropdownMenuItem onClick={() => navigate('/provider')}>
+                      <Users className="mr-2 h-4 w-4" />
+                      Provider Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <div className="flex flex-col space-y-4 mt-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-semibold">Menu</h2>
+                  </div>
+                  
+                  {session ? (
+                    <div className="space-y-2">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => handleNavigation('/dashboard')}
+                      >
+                        Dashboard
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => handleNavigation('/browse')}
+                      >
+                        Browse Services
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => handleNavigation('/profile')}
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        Profile
+                      </Button>
+                      {profile?.role === 'provider' && (
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start" 
+                          onClick={() => handleNavigation('/provider')}
+                        >
+                          <Users className="mr-2 h-4 w-4" />
+                          Provider Dashboard
+                        </Button>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-red-600 hover:text-red-700" 
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => handleNavigation('/login')}
+                      >
+                        Sign In
+                      </Button>
+                      <Button 
+                        className="w-full" 
+                        onClick={() => handleNavigation('/register')}
+                      >
+                        Get Started
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

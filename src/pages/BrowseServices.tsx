@@ -80,7 +80,7 @@ const BrowseServices = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="flex flex-col space-y-6">
           <div>
             <h1 className="text-3xl font-bold mb-2">Browse Services</h1>
@@ -114,7 +114,7 @@ const BrowseServices = () => {
 
           {/* Services Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
                   <CardHeader>
@@ -131,31 +131,31 @@ const BrowseServices = () => {
               ))}
             </div>
           ) : services && services.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {services.map((service) => (
                 <Card key={service.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{service.name}</CardTitle>
-                        <CardDescription className="flex items-center gap-1">
-                          {service.service_providers?.business_name || 'Unknown Provider'}
-                          {service.service_providers?.is_verified && (
-                            <Badge variant="secondary" className="ml-2">
-                              <Star className="w-3 h-3 mr-1" />
-                              Verified
-                            </Badge>
-                          )}
-                        </CardDescription>
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <CardTitle className="text-lg leading-tight">{service.name}</CardTitle>
+                        {service.service_providers && (
+                          <Badge variant="outline" className="capitalize text-xs shrink-0">
+                            {service.service_providers.category}
+                          </Badge>
+                        )}
                       </div>
-                      {service.service_providers && (
-                        <Badge variant="outline" className="capitalize">
-                          {service.service_providers.category}
-                        </Badge>
-                      )}
+                      <CardDescription className="flex items-center gap-1 text-sm">
+                        {service.service_providers?.business_name || 'Unknown Provider'}
+                        {service.service_providers?.is_verified && (
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            <Star className="w-3 h-3 mr-1" />
+                            Verified
+                          </Badge>
+                        )}
+                      </CardDescription>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <div className="space-y-3">
                       {service.description && (
                         <p className="text-sm text-muted-foreground line-clamp-2">
@@ -163,7 +163,7 @@ const BrowseServices = () => {
                         </p>
                       )}
                       
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           {service.duration_minutes} min
@@ -171,16 +171,19 @@ const BrowseServices = () => {
                         {service.service_providers?.address && (
                           <div className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
-                            {service.service_providers.address.split(',')[0]}
+                            <span className="truncate">{service.service_providers.address.split(',')[0]}</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex justify-between items-center pt-2">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-2">
                         <div className="text-2xl font-bold text-primary">
                           {formatPrice(service.price_cents)}
                         </div>
-                        <Button onClick={() => setSelectedService(service)}>
+                        <Button 
+                          onClick={() => setSelectedService(service)}
+                          className="w-full sm:w-auto"
+                        >
                           Book Now
                         </Button>
                       </div>
