@@ -31,7 +31,7 @@ const BrowseServices = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  const { data: services, isLoading } = useQuery({
+  const { data: services, isLoading, error, refetch } = useQuery({
     queryKey: ['services', selectedCategory, searchTerm],
     queryFn: async () => {
       let query = supabase
@@ -60,6 +60,8 @@ const BrowseServices = () => {
       if (error) throw error;
       return data as Service[];
     },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const categories = [
@@ -113,7 +115,19 @@ const BrowseServices = () => {
           </div>
 
           {/* Services Grid */}
-          {isLoading ? (
+          {error ? (
+            <div className="text-center py-12">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold mb-2">Connection Error</h3>
+                <p className="text-muted-foreground mb-4">
+                  Unable to connect to the database. Please check your connection and try again.
+                </p>
+              </div>
+              <Button onClick={() => refetch()}>
+                Try Again
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
