@@ -53,7 +53,7 @@ const BrowseServices = () => {
       }
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,service_providers.business_name.ilike.%${searchTerm}%`);
+        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
